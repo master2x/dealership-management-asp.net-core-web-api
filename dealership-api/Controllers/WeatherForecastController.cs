@@ -1,3 +1,4 @@
+using dealership_api.Models;
 using Microsoft.AspNetCore.Mvc; // Importa todo lo necesario de ASP.NET
 
 namespace dealership_api.Controllers // Ordena el codigo
@@ -9,7 +10,7 @@ namespace dealership_api.Controllers // Ordena el codigo
         private static readonly string[] Summaries =
         [
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        ];
+        ]; //
 
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()// Metodo Get del objeto que esta en controllers

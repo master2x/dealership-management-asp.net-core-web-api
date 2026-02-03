@@ -1,4 +1,4 @@
-namespace dealership_api
+namespace dealership_api.Models
 {
     public class WeatherForecast
     {
