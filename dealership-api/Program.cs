@@ -1,4 +1,6 @@
+using dealership_api.Data;
 using dealership_api.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<VehiculoService>();
 builder.Services.AddSingleton<EmpleadoService>();
 builder.Services.AddSingleton<ClienteService>();
+
+builder.Services.AddDbContext<DealershipDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+        )
+    );
 
 builder.Services.AddControllers();
 
