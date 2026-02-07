@@ -1,23 +1,28 @@
 ﻿using dealership_api.Models;
 namespace dealership_api.Services;
 
+using dealership_api.Data;
 using dealership_api.Dtos.EmpleadosDtos;
 using dealership_api.Dtos.VehiculosDtos;
-
+using Microsoft.EntityFrameworkCore;
 
 public class VehiculoService
 {
-    private static List<Vehiculos> vehiculos = new();
+    private readonly DealershipDbContext _context;
+
+    public VehiculoService(DealershipDbContext context)
+    {
+        _context = context;
+    }
 
     public List<Vehiculos> ObtenerTodosVehiculos()
     {
-        return vehiculos;
+        return _context.Vehiculos.ToList();
     }
 
     public Vehiculos ObtenerVehiculoId(int id)                    
     {
-        Console.WriteLine("Buscando vehiculo...");
-        return vehiculos.FirstOrDefault(v => v.IdVehiculo == id);
+        return _context.Vehiculos.Find(id);
     }
 
     public Vehiculos CrearVehiculo(CrearVehiculoDTO dto)
@@ -26,15 +31,11 @@ public class VehiculoService
         if (string.IsNullOrWhiteSpace(dto.NombreVehiculo) ||
             string.IsNullOrWhiteSpace(dto.Color) ||
             string.IsNullOrWhiteSpace(dto.Marca))
-            return null;
+            throw new ArgumentException("Datos incompletos");
 
-       int nuevoId = vehiculos.Any()
-   ? vehiculos.Max(v => v.IdVehiculo) + 1
-   : 1;
 
         var vehiculo = new Vehiculos
         {
-            IdVehiculo = nuevoId,
             NombreVehiculo = dto.NombreVehiculo,
             Modelo = dto.Modelo,
             Cantidad = dto.Cantidad,
@@ -43,16 +44,19 @@ public class VehiculoService
             Marca = dto.Marca
 
         };
-        vehiculos.Add(vehiculo);
+        _context.Vehiculos.Add(vehiculo);
+        _context.SaveChanges();
         return vehiculo;
     }
 
     public bool EliminarVehiculo(int id)
     {
         var vehiculo = ObtenerVehiculoId(id); // Se reutiliza la funcion para poder buscar por id
-        if (vehiculo == null) return false;
+        if (vehiculo == null)
+            throw new KeyNotFoundException("ID no encontrado");
 
-        vehiculos.Remove(vehiculo); // Se elimina 
+        _context.Vehiculos.Remove(vehiculo); // Se elimina 
+        _context.SaveChanges();
         return true;
     }
 
@@ -61,12 +65,12 @@ public class VehiculoService
         var vehiculoActual = ObtenerVehiculoId(id);
 
         if (vehiculoActual == null)
-            return false;
+            throw new KeyNotFoundException("ID no encontrado");
 
         if (string.IsNullOrWhiteSpace(vehiculoActualizado.NombreVehiculo) ||
             string.IsNullOrWhiteSpace(vehiculoActualizado.Marca) ||
             string.IsNullOrWhiteSpace(vehiculoActualizado.Color))
-            return false;
+            throw new ArgumentException("Datos incompletos");
 
         vehiculoActual.NombreVehiculo = vehiculoActualizado.NombreVehiculo;
         vehiculoActual.Marca = vehiculoActualizado.Marca;
@@ -79,7 +83,7 @@ public class VehiculoService
     {
         var vehiculo = ObtenerVehiculoId(id);
         if (vehiculo == null)
-            return false;
+            throw new KeyNotFoundException("ID no encontrado");
 
         if (dto.NombreVehiculo != null)
             vehiculo.NombreVehiculo = dto.NombreVehiculo;

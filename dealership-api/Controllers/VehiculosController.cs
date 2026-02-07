@@ -27,57 +27,82 @@ namespace dealership_api.Controllers
         [HttpGet("{id}")] // Va a buscar por id
         public ActionResult<Vehiculos> GetById(int id) // Le pasamos el objeto y parametro id
         {
-            var vehiculo = _vehiculoService.ObtenerVehiculoId(id); // Llamamos ala funcion 
+            try
+            {
+                var vehiculo = _vehiculoService.ObtenerVehiculoId(id); // Llamamos ala funcion 
+                return Ok(vehiculo); // si esta bien trae al empleado
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message); // Si no encuentra el id, devuelve un 404 con el mensaje de error
+            }
 
-            if (vehiculo == null)
-                return NotFound();// Devuelve un 404
-
-            return Ok(vehiculo); // si esta bien trae al empleado
         }
 
         [HttpPost]
         public ActionResult<Vehiculos> Post([FromBody] CrearVehiculoDTO dto)
         {
-            var vehiculoCreado = _vehiculoService.CrearVehiculo(dto);
+            try
+            {
+                var vehiculoCreado = _vehiculoService.CrearVehiculo(dto);
+                return CreatedAtAction( // Devuelve un 201
+                    nameof(GetById),
+                    new { id = vehiculoCreado.IdVehiculo },// Se esta creando la url 
+                    vehiculoCreado
+                    );
+            }
+            catch (ArgumentException er)
+            {
+                return BadRequest(er.Message);
+            }
 
-            if (vehiculoCreado == null)
-                return BadRequest(); // Devuelve un 400
-
-            return CreatedAtAction( // Devuelve un 201
-                nameof(GetById),
-                new { id = vehiculoCreado.IdVehiculo },// Se esta creando la url 
-                vehiculoCreado
-                );
         }
 
         [HttpDelete("{id}")] // HTTP para borrar
         public ActionResult Delete(int id) // id como parametro
         {
-            var eliminado = _vehiculoService.EliminarVehiculo(id); // Llamamos al servicio para eliminar
-            if (!eliminado)
-                return NotFound(); // Retorna 404 si no existe
-            return NoContent(); // Retorna 204 si se elimina correctamente
+            try
+            {
+                _vehiculoService.EliminarVehiculo(id); // Llamamos al servicio para eliminar
+                return NoContent(); // Retorna 204 si se elimina correctamente
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
+
         }
 
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] Vehiculos vehiculo)
         {
-            var actualizado = _vehiculoService.ActualizarVehiculo(id, vehiculo);
-
-            if (!actualizado)
-                return NotFound();
-
-            return NoContent(); // Retorna 204 si se actualiza correctamente
+            try
+            {
+                _vehiculoService.ActualizarVehiculo(id, vehiculo);
+                return NoContent(); // Retorna 204 si se actualiza correctamente
+            }
+            catch (ArgumentException er)
+            {
+                return BadRequest(er.Message);
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
         }
 
         [HttpPatch("{id}")]
-
         public ActionResult Patch(int id, [FromBody] ActualizarCamposVehiculo dto)
         {
-            var actualizado = _vehiculoService.ActualizarVehiculoPATCH(id, dto);
-            if (!actualizado)
-                return NotFound();
-            return NoContent(); // Retorna 204 si se actualiza correctamente
+            try
+            {
+                _vehiculoService.ActualizarVehiculoPATCH(id, dto);
+                return NoContent(); // Retorna 204 si se actualiza correctamente
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
         }
     }
 }

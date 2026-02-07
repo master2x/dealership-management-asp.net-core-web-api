@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 //IMPORTACIONES DE SERVICOS
-builder.Services.AddSingleton<VehiculoService>();
-builder.Services.AddSingleton<EmpleadoService>();
-builder.Services.AddSingleton<ClienteService>();
+builder.Services.AddScoped<VehiculoService>();
+builder.Services.AddScoped<EmpleadoService>();
+builder.Services.AddScoped<ClienteService>();
 
 builder.Services.AddDbContext<DealershipDbContext>(options =>
     options.UseMySql(

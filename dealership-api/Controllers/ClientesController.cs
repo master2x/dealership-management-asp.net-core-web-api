@@ -26,58 +26,82 @@ namespace dealership_api.Controllers
         [HttpGet("{id}")] // Va a buscar por id
         public ActionResult<Cliente> GetById(int id) // Le pasamos el objeto y parametro id
         {
-            var cliente = _clienteService.ObtenerClienteId(id); // Llamamos ala funcion 
-
-            if (cliente == null)
-                return NotFound();// Devuelve un 404
-
-            return Ok(cliente); // si esta bien trae al empleado
+            try
+            {
+                var cliente = _clienteService.ObtenerClienteId(id); // Llamamos ala funcion 
+                return Ok(cliente); // si esta bien trae al empleado
+            }
+            catch (ArgumentException er)
+            {
+                return NotFound(er.Message); // Si no encuentra el id, devuelve un 404 con el mensaje de erro
+            }
         }
 
         [HttpPost]
         public ActionResult<Cliente> Post([FromBody] CrearClienteDTO dto)
         {
-            var clienteCreado = _clienteService.CrearCliente(dto);
+            try
+            {
+                var clienteCreado = _clienteService.CrearCliente(dto);
 
-            if (clienteCreado == null)
-                return BadRequest(); // Devuelve un 400
+                return CreatedAtAction( // Devuelve un 201
+                    nameof(GetById),
+                    new { id = clienteCreado.IdCliente },// Se esta creando la url 
+                    clienteCreado
+                    );
+            }
+            catch (ArgumentException er)
+            {
+                return BadRequest(er.Message); // Devuelve un 400 con el mensaje de error
 
-            return CreatedAtAction( // Devuelve un 201
-                nameof(GetById),
-                new { id = clienteCreado.IdCliente },// Se esta creando la url 
-                clienteCreado
-                );
+            }
         }
 
         [HttpDelete("{id}")] // HTTP para borrar
         public ActionResult Delete(int id) // id como parametro
         {
-            var eliminado = _clienteService.EliminarCliente(id); // Llamamos al servicio para eliminar
-            if (!eliminado)
-                return NotFound(); // Retorna 404 si no existe
-            return NoContent(); // Retorna 204 si se elimina correctamente
+            try
+            {
+                var eliminado = _clienteService.EliminarCliente(id); // Llamamos al servicio para eliminar
+                return NoContent(); // Retorna 204 si se elimina correctamente
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message); // Si no encuentra el id, devuelve un 404 con el mensaje de error
+            }
+           
         }
 
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] ActualizarTodoCliente cliente)
         {
-            var actualizado = _clienteService.ActualizarCliente(id, cliente);
-
-            if (!actualizado)
-                return NotFound();
-
-            return NoContent(); // Retorna 204 si se actualiza correctamente
+            try
+            {
+                _clienteService.ActualizarCliente(id, cliente);
+                return NoContent();
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
+            catch (ArgumentException er)
+            {
+                return BadRequest(er.Message);
+            }
         }
 
         [HttpPatch("{id}")]
-
         public ActionResult Patch(int id, [FromBody] ActualizarCamposCliente dto)
+        {
+            try
             {
-            var actualizado = _clienteService.ActualizarClientePATCH(id, dto);
-            if (!actualizado)
-                return NotFound();
-            return NoContent(); // Retorna 204 si se actualiza correctamente
+                _clienteService.ActualizarClientePATCH(id, dto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
         }
     }
 }
-                           

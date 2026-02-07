@@ -1,4 +1,5 @@
-﻿using dealership_api.Dtos.ClientesDtos;
+﻿using dealership_api.Data;
+using dealership_api.Dtos.ClientesDtos;
 using dealership_api.Dtos.EmpleadosDtos;
 using dealership_api.Models;
 
@@ -6,16 +7,23 @@ namespace dealership_api.Services
 {
     public class EmpleadoService
     {
-        private static List<Empleado> empleados = new();
+        private readonly DealershipDbContext _context;
+
+        public EmpleadoService(DealershipDbContext context)
+        {
+            _context = context;
+        }
 
         public List<Empleado> ObtenerTodosEmpleados()
         {
-            return empleados; 
+            return _context.Empleados.ToList(); 
         }
 
         public Empleado ObtenerEmpleadoId(int id)
         {
-            return empleados.FirstOrDefault(e => e.IdEmpleado == id);
+            if (id <= 0)
+                throw new ArgumentException("ID invalido");
+            return _context.Empleados.Find(id);
         }
 
         public Empleado CrearEmpleado(CrearEmpleadoDTO dto)
@@ -26,18 +34,14 @@ namespace dealership_api.Services
             if (string.IsNullOrWhiteSpace(dto.Nombre) ||
                 string.IsNullOrWhiteSpace(dto.Apellido) ||
                 string.IsNullOrWhiteSpace(dto.Correo))
-                return null;
+                throw new ArgumentException("Datos incompletos");
 
             if (!dto.Correo.Contains("@"))
-                return null;
+                throw new ArgumentException("Correo invalido");
 
-            int nuevoId = empleados.Any() // SIEMPRE HAY QUE CREAR UN NUEVO ID, EL USUARIO NO LO TIENE QUE ENVIAR
-      ? empleados.Max(e => e.IdEmpleado) + 1
-      : 1;
 
             var empleado = new Empleado // Crear una nueva instancia de Empleado para validar con el DTO
             {
-                IdEmpleado = nuevoId,
                 Nombre = dto.Nombre,
                 Apellido = dto.Apellido,
                 Correo = dto.Correo,
@@ -46,16 +50,19 @@ namespace dealership_api.Services
                 Salario = dto.Salario
             };
 
-            empleados.Add(empleado);
+            _context.Empleados.Add(empleado);
+            _context.SaveChanges();
             return empleado;
         }
 
         public bool EliminarEmpleado(int id)
         {
             var empleado = ObtenerEmpleadoId(id);
-            if (empleado == null) return false;
+            if (empleado == null)
+                throw new KeyNotFoundException("ID no encontrado");
 
-            empleados.Remove(empleado);
+            _context.Empleados.Remove(empleado);
+            _context.SaveChanges();
             return true;
         }
 
@@ -63,18 +70,20 @@ namespace dealership_api.Services
         {
             var empleadoExistente = ObtenerEmpleadoId(id);
             if (empleadoExistente == null)
-                return false;
+                throw new KeyNotFoundException("ID no encontrado");
             if (empleadoActualizado.Salario <= 0)
-                return false;
+                throw new ArgumentException("Salario invalido");
             if (string.IsNullOrWhiteSpace(empleadoActualizado.Nombre) ||
                 string.IsNullOrWhiteSpace(empleadoActualizado.Apellido) ||
                 string.IsNullOrWhiteSpace(empleadoActualizado.Cargo))
-                return false;
-            
+                throw new ArgumentException("Datos incompletos");
+
             empleadoExistente.Nombre = empleadoActualizado.Nombre;
             empleadoExistente.Apellido = empleadoActualizado.Apellido;
             empleadoExistente.Salario = empleadoActualizado.Salario;
             empleadoExistente.Cargo = empleadoActualizado.Cargo;
+
+            _context.SaveChanges();
             return true;
         }
 
@@ -82,7 +91,7 @@ namespace dealership_api.Services
         {
             var empleado = ObtenerEmpleadoId(id);
             if (empleado == null)
-                return false;
+                throw new KeyNotFoundException("ID no encontrado");
 
             if (dto.Nombre != null)
                 empleado.Nombre = dto.Nombre;
@@ -96,6 +105,7 @@ namespace dealership_api.Services
             if (dto.Salario.HasValue && dto.Salario > 0)// Verificar que si tenga valor y sea mayor a 0
                 empleado.Salario = dto.Salario.Value;
 
+            _context.SaveChanges();
             return true;
         }
     }

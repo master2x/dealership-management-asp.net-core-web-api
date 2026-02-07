@@ -7,14 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace dealership_api.Controllers
 {
-
     [ApiController] // Le indicamos que es un controlador 
     [Route("api/[controller]")] // Ruta por defecto para los endpoints
     public class EmpleadoController : ControllerBase // El controlador de empleado hereda de controllerBase
     {
         private readonly EmpleadoService _empleadoService; // Ponemos privada el servicio y se le asigna un nuevo nombre
-        
-        public EmpleadoController (EmpleadoService empleadoService) // Constructor para la inyeccion de dependencias
+
+        public EmpleadoController(EmpleadoService empleadoService) // Constructor para la inyeccion de dependencias
         {
             _empleadoService = empleadoService;
         }
@@ -28,57 +27,83 @@ namespace dealership_api.Controllers
         [HttpGet("{id}")] // Va a buscar por id
         public ActionResult<Empleado> GetById(int id) // Le pasamos el objeto y parametro id
         {
-            var empleado = _empleadoService.ObtenerEmpleadoId(id); // Llamamos ala funcion 
-
-            if (empleado == null)
-                return NotFound("No encontrado");// Devuelve un 404
-
-            return Ok(empleado); // si esta bien trae al empleado
+            try
+            {
+                var empleado = _empleadoService.ObtenerEmpleadoId(id); // Llamamos ala funcion 
+                return Ok(empleado); // si esta bien trae al empleado
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
         }
 
         [HttpPost]
         public ActionResult<Empleado> Post([FromBody] CrearEmpleadoDTO dto)
         {
-            var empleadoCreado = _empleadoService.CrearEmpleado(dto);
-
-            if (empleadoCreado  == null)
-                return BadRequest("Datos invalidos"); // Devuelve un 400
-
-            return CreatedAtAction( // Devuelve un 201
-                nameof(GetById),
-                new { id = empleadoCreado.IdEmpleado },// Se esta creando la url 
-                empleadoCreado
-                );
+            try
+            {
+                var empleadoCreado = _empleadoService.CrearEmpleado(dto);
+                return CreatedAtAction( // Devuelve un 201
+                    nameof(GetById),
+                    new { id = empleadoCreado.IdEmpleado },// Se esta creando la url 
+                    empleadoCreado
+                    );
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
+            catch (ArgumentException er)
+            {
+                return BadRequest(er.Message);
+            }
         }
 
         [HttpDelete("{id}")] // HTTP para borrar
         public ActionResult Delete(int id) // id como parametro
         {
-            var eliminado = _empleadoService.EliminarEmpleado(id); // Llamamos al servicio para eliminar
-            if (!eliminado)
-                return NotFound(); // Retorna 404 si no existe
-            return NoContent(); // Retorna 204 si se elimina correctamente
+            try
+            {
+                _empleadoService.EliminarEmpleado(id); // Llamamos al servicio para eliminar
+                return NoContent(); // Retorna 204 si se elimina correctamente
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
         }
 
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] Empleado empleado)
         {
-            var actualizado = _empleadoService.ActualizarEmpleado(id, empleado);
-
-            if (!actualizado)
-                return NotFound();
-
-            return NoContent(); // Retorna 204 si se actualiza correctamente
+            try
+            {
+                _empleadoService.ActualizarEmpleado(id, empleado);
+                return NoContent(); // Retorna 204 si se actualiza correctamente
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
+            catch (ArgumentException er)
+            {
+                return BadRequest(er.Message);
+            }
         }
 
         [HttpPatch("{id}")]
-
         public ActionResult Patch(int id, [FromBody] ActualizarCamposEmpleado dto)
         {
-            var actualizado = _empleadoService.ActualizarEmpleadoPATCH(id, dto);
-            if (!actualizado)
-                return NotFound();
-            return NoContent(); // Retorna 204 si se actualiza correctamente
+            try
+            {
+                _empleadoService.ActualizarEmpleadoPATCH(id, dto);
+                return NoContent(); // Retorna 204 si se actualiza correctamente
+            }
+            catch (KeyNotFoundException er)
+            {
+                return NotFound(er.Message);
+            }
         }
     }
 }
