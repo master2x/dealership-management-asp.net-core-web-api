@@ -30,8 +30,12 @@ public class VehiculoService
 
         if (string.IsNullOrWhiteSpace(dto.NombreVehiculo) ||
             string.IsNullOrWhiteSpace(dto.Color) ||
-            string.IsNullOrWhiteSpace(dto.Marca))
+            string.IsNullOrWhiteSpace(dto.Marca) ||
+            string.IsNullOrWhiteSpace(dto.Placa))
             throw new ArgumentException("Datos incompletos");
+
+        if(dto.Precio <=0)
+            throw new ArgumentException("Precio invalido");
 
 
         var vehiculo = new Vehiculos
@@ -41,7 +45,10 @@ public class VehiculoService
             Cantidad = dto.Cantidad,
             Disponible = dto.Disponible,
             Color = dto.Color,
-            Marca = dto.Marca
+            Marca = dto.Marca,
+            Placa = dto.Placa,
+            Precio = dto.Precio,
+            FechaRegistroVehiculo = DateTime.UtcNow
 
         };
         _context.Vehiculos.Add(vehiculo);
@@ -102,6 +109,4 @@ public class VehiculoService
 
         return true;
     }
-
-
 }

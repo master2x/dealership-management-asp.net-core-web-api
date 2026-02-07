@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dealership_api.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -16,5 +17,10 @@ namespace dealership_api.Models
         public bool Disponible { get; set; }
         public string Color { get; set; }
         public string Marca { get; set; }
+        public string Placa { get; set; }
+        public decimal Precio { get; set; }
+        public TipoVehiculo TipoVehiculo { get; set; }
+        public DateTime FechaRegistroVehiculo { get; set; }
+        public EstadoVehiculo EstadoVehiculo { get; set; }
     }
 }

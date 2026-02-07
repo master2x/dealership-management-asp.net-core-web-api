@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using dealership_api.Data;
 
@@ -11,9 +12,11 @@ using dealership_api.Data;
 namespace dealership_api.Migrations
 {
     [DbContext(typeof(DealershipDbContext))]
-    partial class DealershipDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260207042307_FixTelefonoYSalario")]
+    partial class FixTelefonoYSalario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,9 +45,6 @@ namespace dealership_api.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("FechaRegistroCliente")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("NombreCliente")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -56,6 +56,38 @@ namespace dealership_api.Migrations
                     b.HasKey("IdCliente");
 
                     b.ToTable("Clientes");
+                });
+
+            modelBuilder.Entity("dealership_api.Models.DetalleVenta", b =>
+                {
+                    b.Property<int>("IdDetalleVenta")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IdDetalleVenta"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("VehiculoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VentaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdDetalleVenta");
+
+                    b.HasIndex("VehiculoId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("DetalleVenta");
                 });
 
             modelBuilder.Entity("dealership_api.Models.Empleado", b =>
@@ -119,9 +151,6 @@ namespace dealership_api.Migrations
                     b.Property<bool>("Disponible")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("EstadoVehiculo")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("FechaRegistroVehiculo")
                         .HasColumnType("datetime(6)");
 
@@ -151,16 +180,13 @@ namespace dealership_api.Migrations
                     b.ToTable("Vehiculos");
                 });
 
-            modelBuilder.Entity("dealership_api.Models.Ventas", b =>
+            modelBuilder.Entity("dealership_api.Models.Venta", b =>
                 {
                     b.Property<int>("IdVenta")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IdVenta"));
-
-                    b.Property<decimal>("Anticipo")
-                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("ClienteId")
                         .HasColumnType("int");
@@ -174,17 +200,8 @@ namespace dealership_api.Migrations
                     b.Property<DateTime>("FechaVenta")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<decimal>("SaldoPendiente")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<decimal>("TotalVenta")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("VehiculoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("VendedorId")
-                        .HasColumnType("int");
 
                     b.HasKey("IdVenta");
 
@@ -192,14 +209,29 @@ namespace dealership_api.Migrations
 
                     b.HasIndex("EmpleadoId");
 
-                    b.HasIndex("VehiculoId");
-
-                    b.HasIndex("VendedorId");
-
-                    b.ToTable("Ventas");
+                    b.ToTable("Venta");
                 });
 
-            modelBuilder.Entity("dealership_api.Models.Ventas", b =>
+            modelBuilder.Entity("dealership_api.Models.DetalleVenta", b =>
+                {
+                    b.HasOne("dealership_api.Models.Vehiculos", "Vehiculo")
+                        .WithMany()
+                        .HasForeignKey("VehiculoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("dealership_api.Models.Venta", "Venta")
+                        .WithMany("Detalles")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vehiculo");
+
+                    b.Navigation("Venta");
+                });
+
+            modelBuilder.Entity("dealership_api.Models.Venta", b =>
                 {
                     b.HasOne("DealershipApp.Console.Models.Cliente", "Cliente")
                         .WithMany()
@@ -213,25 +245,14 @@ namespace dealership_api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("dealership_api.Models.Vehiculos", "Vehiculo")
-                        .WithMany()
-                        .HasForeignKey("VehiculoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("dealership_api.Models.Empleado", "Vendedor")
-                        .WithMany()
-                        .HasForeignKey("VendedorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Cliente");
 
                     b.Navigation("Empleado");
+                });
 
-                    b.Navigation("Vehiculo");
-
-                    b.Navigation("Vendedor");
+            modelBuilder.Entity("dealership_api.Models.Venta", b =>
+                {
+                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }

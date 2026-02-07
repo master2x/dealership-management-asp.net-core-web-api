@@ -39,6 +39,9 @@ namespace dealership_api.Services
             if (!dto.Correo.Contains("@"))
                 throw new ArgumentException("Correo invalido");
 
+            if (dto.Telefono.Length != 10)
+                throw new ArgumentException("El teléfono debe tener 10 dígitos");
+
 
             var empleado = new Empleado // Crear una nueva instancia de Empleado para validar con el DTO
             {
@@ -47,7 +50,9 @@ namespace dealership_api.Services
                 Correo = dto.Correo,
                 Telefono = dto.Telefono,
                 Cargo = dto.Cargo,
-                Salario = dto.Salario
+                Contraseña = dto.Contraseña,
+                Salario = dto.Salario,
+                FechaRegistroEmpleado = DateTime.UtcNow
             };
 
             _context.Empleados.Add(empleado);

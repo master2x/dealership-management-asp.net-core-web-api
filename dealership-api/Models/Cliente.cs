@@ -17,6 +17,7 @@ namespace DealershipApp.Console.Models
         public string ApellidoCliente { get; set; }
         public string DireccionCliente { get; set; }
         public string CorreoCliente { get; set; }
-        public int TelefonoCliente { get; set; }
+        public string TelefonoCliente { get; set; }
+        public DateTime FechaRegistroCliente { get; set; }
     }
 }

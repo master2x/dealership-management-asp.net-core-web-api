@@ -37,6 +37,9 @@ namespace dealership_api.Services
             if (!dto.CorreoCliente.Contains("@"))
                 throw new ArgumentException("Correo invalido");
 
+            if (dto.TelefonoCliente.Length != 10)
+                throw new ArgumentException("El teléfono debe tener 10 dígitos");
+
             // Se elimino la creacion del id ya que EF lo crea automaticamente al agregar el cliente a la base de datos
 
             var cliente = new Cliente
@@ -46,7 +49,8 @@ namespace dealership_api.Services
                 ApellidoCliente = dto.ApellidoCliente,
                 DireccionCliente = dto.DireccionCliente,
                 CorreoCliente = dto.CorreoCliente,
-                TelefonoCliente = dto.TelefonoCliente
+                TelefonoCliente = dto.TelefonoCliente,
+                FechaRegistroCliente = DateTime.UtcNow
             };
 
             _context.Clientes.Add(cliente);
@@ -77,8 +81,8 @@ namespace dealership_api.Services
             string.IsNullOrWhiteSpace(clienteActualizado.DireccionCliente)) 
                     throw new ArgumentException("Datos incompletos");
 
-            if (clienteActualizado.TelefonoCliente <= 0)
-                throw new ArgumentException("Numero invalido");
+            if (clienteActualizado.TelefonoCliente.Length != 10)
+                throw new ArgumentException("El teléfono debe tener 10 dígitos");
 
             clienteExistente.NombreCliente = clienteActualizado.NombreCliente; // El cliente existente se actualiza con los nuevos valores
             clienteExistente.ApellidoCliente = clienteActualizado.ApellidoCliente;
@@ -104,8 +108,8 @@ namespace dealership_api.Services
             if (dto.DireccionCliente != null)
                 cliente.DireccionCliente = dto.DireccionCliente;
 
-            if (dto.TelefonoCliente.HasValue && dto.TelefonoCliente > 0)// Verificar que si tenga valor y sea mayor a 0
-                cliente.TelefonoCliente = dto.TelefonoCliente.Value;
+            if (dto.TelefonoCliente.Length > 10)
+            cliente.TelefonoCliente = dto.TelefonoCliente;
 
             _context.SaveChanges();
             return true;

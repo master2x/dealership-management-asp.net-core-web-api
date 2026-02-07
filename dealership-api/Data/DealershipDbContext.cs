@@ -15,5 +15,6 @@ namespace dealership_api.Data
         public DbSet<Empleado> Empleados { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Vehiculos> Vehiculos { get; set; }
+        public DbSet<Ventas> Ventas { get; set; }
     }
 }
