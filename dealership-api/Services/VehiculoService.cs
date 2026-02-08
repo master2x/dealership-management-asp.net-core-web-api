@@ -35,7 +35,10 @@ public class VehiculoService
             throw new ArgumentException("Datos incompletos");
 
         if(dto.Precio <=0)
-            throw new ArgumentException("Precio invalido");
+            throw new ArgumentException("Precio invalido");    
+
+        if (dto.Cantidad <= 0)
+            dto.EstadoVehiculo = Enums.EstadoVehiculo.NoDisponible;
 
 
         var vehiculo = new Vehiculos
@@ -43,11 +46,12 @@ public class VehiculoService
             NombreVehiculo = dto.NombreVehiculo,
             Modelo = dto.Modelo,
             Cantidad = dto.Cantidad,
-            Disponible = dto.Disponible,
             Color = dto.Color,
             Marca = dto.Marca,
             Placa = dto.Placa,
             Precio = dto.Precio,
+            EstadoVehiculo = dto.EstadoVehiculo,
+            TipoVehiculo = dto.TipoVehiculo,
             FechaRegistroVehiculo = DateTime.UtcNow
 
         };

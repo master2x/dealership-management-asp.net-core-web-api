@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<VehiculoService>();
 builder.Services.AddScoped<EmpleadoService>();
 builder.Services.AddScoped<ClienteService>();
+builder.Services.AddScoped<VentaService>();
 
 builder.Services.AddDbContext<DealershipDbContext>(options =>
     options.UseMySql(

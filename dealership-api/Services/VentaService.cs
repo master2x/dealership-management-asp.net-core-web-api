@@ -11,7 +11,7 @@ namespace dealership_api.Services;
 public class VentaService
 {
     private readonly DealershipDbContext _context;
-
+    
     public VentaService(DealershipDbContext context)
     {
         _context = context;
@@ -22,31 +22,30 @@ public class VentaService
         return _context.Ventas.ToList();
     }
 
+    public Ventas ObtenerVentaId(int id)
+    {
+        return _context.Ventas.Find(id);
+
+    }
+
     public Ventas CrearVenta(CrearVentaDTO dto)
     {
-        // Validaciones básicas
         if (dto.TotalVenta <= 0)
             throw new ArgumentException("El total de la venta debe ser mayor a cero.");
 
         if (dto.Anticipo < 0 || dto.Anticipo > dto.TotalVenta)
             throw new ArgumentException("El anticipo no es válido.");
 
-        // 🔍 Buscar entidades
         var vehiculo = _context.Vehiculos.Find(dto.VehiculoId);
         if (vehiculo == null)
-            throw new Exception("El vehículo no existe.");
-
-        // 🚫 Regla de negocio CLAVE
-        if (vehiculo.EstadoVehiculo != EstadoVehiculo.Disponible)
-            throw new Exception("El vehículo no está disponible para la venta.");
+            throw new KeyNotFoundException("El vehículo no existe.");
 
         var cliente = _context.Clientes.Find(dto.ClienteId)
-            ?? throw new Exception("El cliente no existe.");
+            ?? throw new KeyNotFoundException("El cliente no existe.");
 
         var empleado = _context.Empleados.Find(dto.EmpleadoId)
-            ?? throw new Exception("El empleado no existe.");
+            ?? throw new KeyNotFoundException("El empleado no existe.");
 
-        // 🧠 Calcular saldo
         var saldo = dto.TotalVenta - dto.Anticipo;
 
         var venta = new Ventas
@@ -61,12 +60,36 @@ public class VentaService
             VehiculoId = dto.VehiculoId
         };
 
-        // 🔒 Bloquear vehículo
-        vehiculo.EstadoVehiculo = EstadoVehiculo.Reservado;
+        vehiculo.Cantidad -= 1;
+        vehiculo.EstadoVehiculo = vehiculo.Cantidad > 0
+            ? EstadoVehiculo.Reservado
+            : EstadoVehiculo.NoDisponible;
 
         _context.Ventas.Add(venta);
         _context.SaveChanges();
 
+        return venta;
+    }
+
+    public Ventas AnularVenta(int id)
+    {
+        var venta = ObtenerVentaId(id);
+        if (venta == null)
+            throw new KeyNotFoundException("La venta no existe.");
+
+        if (venta.EstadoVenta == EstadoVenta.Cancelada)
+            throw new InvalidOperationException("La venta ya está cancelada.");
+
+        if (venta.EstadoVenta == EstadoVenta.Pagada)
+            throw new InvalidOperationException("No se puede cancelar una venta pagada.");
+
+        venta.EstadoVenta = EstadoVenta.Cancelada;
+
+        var vehiculo = _context.Vehiculos.Find(venta.VehiculoId);
+        vehiculo.Cantidad += 1;
+        vehiculo.EstadoVehiculo = EstadoVehiculo.Disponible;
+
+        _context.SaveChanges();
         return venta;
     }
 }

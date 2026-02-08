@@ -18,9 +18,9 @@ namespace dealership_api.Models
         public Cliente Cliente { get; set; }
         public int EmpleadoId { get; set; }
         public Empleado Empleado { get; set; }
-        public int VendedorId { get; set; }
-        public Empleado Vendedor { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Anticipo { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal SaldoPendiente { get; set; }
         public int VehiculoId { get; set; }
         public Vehiculos Vehiculo { get; set; }

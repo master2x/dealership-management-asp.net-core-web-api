@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using dealership_api.Data;
 
@@ -11,9 +12,11 @@ using dealership_api.Data;
 namespace dealership_api.Migrations
 {
     [DbContext(typeof(DealershipDbContext))]
-    partial class DealershipDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260207230429_FixCamposVentas")]
+    partial class FixCamposVentas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,6 +119,9 @@ namespace dealership_api.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<bool>("Disponible")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<int>("EstadoVehiculo")
                         .HasColumnType("int");
 
@@ -138,7 +144,7 @@ namespace dealership_api.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<decimal>("Precio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("TipoVehiculo")
                         .HasColumnType("int");
@@ -157,7 +163,7 @@ namespace dealership_api.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IdVenta"));
 
                     b.Property<decimal>("Anticipo")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("ClienteId")
                         .HasColumnType("int");
@@ -172,12 +178,15 @@ namespace dealership_api.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("SaldoPendiente")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<decimal>("TotalVenta")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("VehiculoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VendedorId")
                         .HasColumnType("int");
 
                     b.HasKey("IdVenta");
@@ -187,6 +196,8 @@ namespace dealership_api.Migrations
                     b.HasIndex("EmpleadoId");
 
                     b.HasIndex("VehiculoId");
+
+                    b.HasIndex("VendedorId");
 
                     b.ToTable("Ventas");
                 });
@@ -211,11 +222,19 @@ namespace dealership_api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("dealership_api.Models.Empleado", "Vendedor")
+                        .WithMany()
+                        .HasForeignKey("VendedorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Cliente");
 
                     b.Navigation("Empleado");
 
                     b.Navigation("Vehiculo");
+
+                    b.Navigation("Vendedor");
                 });
 #pragma warning restore 612, 618
         }
